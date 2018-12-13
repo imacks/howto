@@ -23,4 +23,5 @@ Fortunately, ThinkPad comes with a utility for you to customize this logo, which
 7. Follow the on-screen instructions. You are advised to switch to AC-power while your BIOS is being replaced.
 8. Enjoy your new logo once computer reboots :)
 
-Last updated on 4:51 PM 13/12/2018
+
+_Last updated on 4:51 PM 13/12/2018_
