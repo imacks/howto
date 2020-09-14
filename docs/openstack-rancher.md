@@ -1,6 +1,6 @@
 Rancher Cluster Setup on Openstack
 ==================================
-This is a full walkthrough on running a Rancher cluster as a tenant on Openstack.
+This is a full walkthrough on manually setting up a Rancher cluster as a tenant on Openstack. 
 
 Openstack network configuration
 -------------------------------
