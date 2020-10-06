@@ -39,6 +39,12 @@ Openstack network configuration
   - IP Protocol: -1
   - CIDR: ::/0
   - (Add)
+- Network > Security Groups > (open hyperlink) > (+Add Rule)
+  - Rule: Other Protocol
+  - IP Protocol: -1
+  - Remote: Security Group
+  - Security Group: open
+  - (Add)
 
 4. Create a network security group for controller node
 - Network > Security Groups > (+Create Security Group)
@@ -50,7 +56,14 @@ Openstack network configuration
   - Security Group: secure
   - (Add)
 - (Repeat last step but choose `open` for Security Group)
-- (Repeat last 2 steps but choose `IPv6` for Ether Type)
+
+5. Allow `secure` to access `open` group:
+- Network > Security Groups > (open hyperlink) > (+Add Rule)
+  - Rule: Other Protocol
+  - IP Protocol: -1
+  - Remote: Security Group
+  - Security Group: secure
+  - (Add)
 
 
 Openstack VM instances
@@ -177,7 +190,12 @@ docker logs -f rancher-server
 5. Wait for a while and then visit http://<allocated_ip>:8080 to enter Rancher web console.
 
 6. Secure your Rancher controller by setting up an admin password.
-
+- admin > access control > (local)
+  - Login Username: ranchadmin
+  - Full Name: RanchAdmin
+  - Password: ChangeMe
+  - Confirm Password: ChangeMe
+  - (Enable Local Auth)
 
 Configure worker node VM
 ------------------------
@@ -218,12 +236,58 @@ docker info
 
 Configure Rancher
 -----------------
-1. Add worker node to cluster
-2. Install certificates
-3. Setup self proxy
-4. Install containerized NFS
-5. Harden containerized environment
+1. Customize settings:
+- admin > settings
+  - Host Registration URL
+    - Something else: http://<private_ip_of_ran1ctl1>:8080
+    - (save)
+  - Catalog
+    - Community Contributed: (disable)
+    - (save)
+
+2. Add worker node to cluster
+- infrastructure > hosts > (add host) > (custom)
+  - Specify the public IP...: <private ip of ran1node1>
+  - (follow instruction 5 on screen and execute command on node1)
+  - (close)
+- (see host appear)
+
+3. Run basic services
+- catalog > library > Network Policy Manager
+  - (Launch)
+- default > edit default > Network Policy
+  - Everything else: deny
+- catalog > library > rancher nfs
+  - nfs server: <private ip of ran1ctl1>
+  - export base directory: /storage/nfsvol
+- infrastructure > hosts > (ran1node1) > ... > edit
+  - labels > (+add label) > io.role.lbs=yes
+
+4. Install certificates
+- infrastructure > certificates > (Add certificate)
+
+5. Self reverse proxy
+- stacks > user > (Add Stack)
+  - Name: loadbalancer
+  - Description: Primary loadbalancer
+  - (Create)
+  - (Add Service) > Add external service
+    - Name: control1
+    - Add target IP: <private ip of ran1ctl1>
+    - (Create)
+  - (Add Service) > Add Load balancer
+    - Name: lbs
+    - Always run one instance ...onevery host
+    - Port Rules:
+      - Public | HTTPS | rancher.example.com | 443 | loadbalancer/control1 | 8080
+  - SSL Termination: (choose cert)
+  - Scheduling > (+Add Scheduling Rule)
+    - The host must have a host label of io.role.lbs = yes
+  - (Create)
+
 6. Integrate with external loadbalancer
+Let's say you own example.com. Configure your nameserver to point rancher.example.com to the floating IP address 
+assigned to ran1node1. Now you can get to the Rancher console by visiting https://rancher.example.com.
 
 
 Protect controller
@@ -235,12 +299,12 @@ Disable temporarily enable access to `ran1ctl1`:
 - Compute > Instances > (ran1ctl1) > (dropdown arrow next to `Create Snapshot` button) > Deassociate Floating IP
 
 
-Adding new worker nodes
------------------------
+Adding more worker nodes
+------------------------
 1. Repeat step 4 of `Openstack VM instances`, substitute `ran1node1` for `ran1node2`, etc.
 2. Repeat step 2 of `Openstack volumes`, substitute `ran1node1ssd1` for `ran1node2ssd1`, etc.
 3. Repeat `Configure worker node VM`
-4. Repeat step 1 of `Configure Rancher`.
+4. Repeat step 2 of `Configure Rancher`.
 
 
 Variations
@@ -255,4 +319,5 @@ The following variables in the steps above may be substituted:
 7. 128gb disk on controller: increase or decrease as needed. this disk is shared via nfs by all the worker nodes.
 8. 16gb disk on workers: this disk is used by docker for local volumes and images. increase or decrease as needed.
 9. /dev/vdb: this should be the mount point for the first data disk, but you can verify using `ls /dev/vd*`.
- 
+10. ChangeMe: change this to your own password!!!
+11. ranchadmin/RanchAdmin: change this to your desired admin username
