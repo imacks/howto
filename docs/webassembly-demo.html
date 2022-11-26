@@ -1,0 +1,47 @@
+<html>
+<head>
+    <title>Webassembly Demo</title>
+    <script type="text/javascript">
+        function getWasmBlob() {
+            // WebAssembly is a way to run binary code in your browser. To use, your webserver will 
+            // typically serve a .wasm file, which you then use WebAssembly.instantiate (or the newer 
+            // instantiateStreaming) method to compile and run.
+            //
+            // .wasm file always has the prefix magic `0x00, 0x61, 0x73, 0x6d` (\0asm), followed by 
+            // version number (currently only valid value is 0x1). See https://webassembly.github.io/spec/core/binary/modules.html 
+            // and https://rsms.me/wasm-intro for details on the body format.
+            //
+            // See also: https://webassembly.github.io/spec/core/index.html, 
+            // https://webassembly.github.io/spec/core/binary/index.html
+            return new Uint8Array([
+                0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+	        0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01,
+	        0x7f, 0x03, 0x02, 0x01, 0x00, 0x07, 0x07, 0x01,
+	        0x03, 0x61, 0x64, 0x64, 0x00, 0x00, 0x0a, 0x09,
+	        0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a,
+	        0x0b
+            ]);
+        }
+
+        // https://developer.mozilla.org/en-US/docs/WebAssembly/Using_the_JavaScript_API
+        // https://developer.mozilla.org/en-US/docs/WebAssembly/Loading_and_running
+        // https://developer.mozilla.org/en-US/docs/WebAssembly/C_to_wasm
+        window.onload = function() {
+            // instantiate(buf, importObj)
+            WebAssembly.instantiate(getWasmBlob(), {}).then(function(result) { 
+                return result.instance;
+            }).then(function(instance) {
+                // use the wasm exported function "add"
+                var ret = instance.exports.add(1, 2);
+                // display it
+                document.getElementById("wasm-result").innerHTML = "<code>add(1, 2) = " + 
+                    ret + "</code>";
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>webasm test</h1>
+    <div id="wasm-result">placeholder</div>
+</body>
+</html>
