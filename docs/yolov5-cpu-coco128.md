@@ -7,9 +7,8 @@ $ docker run -dit --rm --name test debian:bookworm-20230725-slim
 
 -----------------------------
 apt-get update
-apt-get install git curl unzip nano python3-pip
-# also try: apt-get install libgl1
-apt-get install ffmpeg libsm6 libxext6
+apt-get install git curl unzip
+apt-get install python3-pip libgl1 libglib2.0
 rm /usr/lib/python3.11/EXTERNALLY-MANAGED
 
 cd /usr/src
