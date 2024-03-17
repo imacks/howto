@@ -25,7 +25,7 @@ pip install -r requirements.txt
 mkdir -p /root/.config/Ultralytics
 curl -Lo /root/.config/Ultralytics/Arial.ttf https://ultralytics.com/assets/Arial.ttf
 curl -LO https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5s.pt # or yolov5n.pt
-nano data/coco128.yaml
+sed -i '/download:/d' data/coco128.yaml
 # also try remove "--workers 0" for "--shm-size=5gb" or "--ipc=host" in docker run
 python3 train.py --device cpu --workers 0 --batch-size 3 --img 640 --epochs 3 --data coco128.yaml --weights yolov5s.pt
 
